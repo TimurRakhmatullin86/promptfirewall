@@ -171,8 +171,6 @@ assert_eq!(result.redacted_text.unwrap(), "SSN: [SSN]");
 
 ## Limitations
 
-To be transparent about what this is and isn't:
-
 - **PII recall**: Structured patterns only (SSN, CC, IBAN, etc.). No name/address detection — that requires NER which adds 10-100ms latency.
 - **Injection recall**: Heuristic + TF-IDF catches ~80-90% of known patterns. A fine-tuned transformer model gets higher recall but at 100-1000x the latency. The tradeoff is intentional.
 - **No GPU acceleration**: By design — the point is zero infrastructure requirements.
