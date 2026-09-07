@@ -14,7 +14,7 @@ pub fn validate(number: &str) -> bool {
         .rev()
         .enumerate()
         .map(|(i, &d)| {
-            if i % 2 == 1 {
+            if !i.is_multiple_of(2) {
                 let doubled = d * 2;
                 if doubled > 9 {
                     doubled - 9
