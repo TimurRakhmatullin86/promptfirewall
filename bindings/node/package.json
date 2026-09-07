@@ -1,5 +1,5 @@
 {
-  "name": "promptfirewall",
+  "name": "promptfirewall-rs",
   "version": "0.1.0",
   "description": "PII detection + prompt injection firewall. Sub-millisecond, zero network, zero GPU.",
   "main": "index.js",

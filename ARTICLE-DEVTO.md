@@ -117,7 +117,7 @@ app.add_middleware(PromptFirewall)  # blocks unsafe POST/PUT/PATCH with 400
 ### Node.js
 
 ```bash
-npm install promptfirewall
+npm install promptfirewall-rs
 ```
 
 ```javascript
@@ -180,7 +180,7 @@ assert_eq!(result.redacted_text.unwrap(), "SSN: [SSN]");
 ```bash
 pip install promptfirewall-rs
 # or
-npm install promptfirewall
+npm install promptfirewall-rs
 # or
 cargo add promptfirewall
 ```
