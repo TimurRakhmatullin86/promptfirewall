@@ -1,0 +1,44 @@
+{
+  "name": "promptfirewall",
+  "version": "0.1.0",
+  "description": "PII detection + prompt injection firewall. Sub-millisecond, zero network, zero GPU.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "promptfirewall.*.node",
+    "middleware.js"
+  ],
+  "author": "Timur Rakhmatullin",
+  "keywords": [
+    "pii",
+    "prompt-injection",
+    "firewall",
+    "llm",
+    "security",
+    "gdpr",
+    "hipaa",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TimurRakhmatullin86/promptfirewall"
+  },
+  "homepage": "https://github.com/TimurRakhmatullin86/promptfirewall",
+  "napi": {
+    "name": "promptfirewall",
+    "triples": {
+      "defaults": true
+    }
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3"
+  },
+  "scripts": {
+    "build": "napi build --release --platform",
+    "test": "node --test __test__/test.mjs"
+  }
+}

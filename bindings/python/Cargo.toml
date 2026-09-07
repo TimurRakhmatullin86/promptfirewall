@@ -1,0 +1,17 @@
+[package]
+name = "promptfirewall-python"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lib]
+name = "_internal"
+crate-type = ["cdylib"]
+
+[dependencies]
+promptfirewall = { path = "../../crates/promptfirewall" }
+pyo3 = { version = "0.25", features = ["extension-module"] }
+serde_json = "1"

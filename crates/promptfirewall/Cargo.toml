@@ -1,0 +1,27 @@
+[package]
+name = "promptfirewall"
+description = "PII detection + prompt injection firewall. 2ms, zero network, zero GPU. Rust core with Python/Node bindings."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+keywords = ["pii", "prompt-injection", "firewall", "llm", "security"]
+categories = ["text-processing", "web-programming"]
+
+[dependencies]
+regex = "1"
+once_cell = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "pii_bench"
+harness = false
+
+[[bench]]
+name = "injection_bench"
+harness = false
