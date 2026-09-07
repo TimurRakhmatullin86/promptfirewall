@@ -27,7 +27,7 @@ pub fn validate(number: &str) -> bool {
         })
         .sum();
 
-    checksum % 10 == 0
+    checksum.is_multiple_of(10)
 }
 
 #[cfg(test)]
