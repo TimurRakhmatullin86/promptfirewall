@@ -180,11 +180,7 @@ fn is_safe(text: &str) -> bool {
 
 #[pyfunction]
 #[pyo3(signature = (text, *, redact_with = "mask", pii_types = None))]
-fn redact(
-    text: &str,
-    redact_with: &str,
-    pii_types: Option<Vec<String>>,
-) -> PyResult<String> {
+fn redact(text: &str, redact_with: &str, pii_types: Option<Vec<String>>) -> PyResult<String> {
     let pii_type_list = match pii_types {
         Some(types) => parse_pii_types(types)?,
         None => promptfirewall::PiiType::all(),

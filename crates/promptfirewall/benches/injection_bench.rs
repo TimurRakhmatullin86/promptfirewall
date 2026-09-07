@@ -40,5 +40,11 @@ fn bench_full_scan(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_injection_obvious, bench_injection_subtle, bench_injection_benign, bench_full_scan);
+criterion_group!(
+    benches,
+    bench_injection_obvious,
+    bench_injection_subtle,
+    bench_injection_benign,
+    bench_full_scan
+);
 criterion_main!(benches);

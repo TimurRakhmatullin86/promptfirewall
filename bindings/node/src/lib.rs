@@ -37,7 +37,10 @@ fn parse_redact_strategy(s: &str) -> Result<promptfirewall::RedactStrategy> {
         "placeholder" => Ok(promptfirewall::RedactStrategy::Placeholder),
         _ => Err(Error::new(
             Status::InvalidArg,
-            format!("Invalid redact strategy '{}'. Use 'mask', 'hash', or 'placeholder'.", s),
+            format!(
+                "Invalid redact strategy '{}'. Use 'mask', 'hash', or 'placeholder'.",
+                s
+            ),
         )),
     }
 }

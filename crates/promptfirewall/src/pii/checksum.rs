@@ -30,12 +30,10 @@ pub fn validate_iban(iban: &str) -> bool {
         .collect();
 
     // mod 97 on a large number — process in chunks
-    let remainder = numeric_str
-        .chars()
-        .fold(0u64, |acc, ch| {
-            let digit = ch.to_digit(10).unwrap() as u64;
-            (acc * 10 + digit) % 97
-        });
+    let remainder = numeric_str.chars().fold(0u64, |acc, ch| {
+        let digit = ch.to_digit(10).unwrap() as u64;
+        (acc * 10 + digit) % 97
+    });
 
     remainder == 1
 }

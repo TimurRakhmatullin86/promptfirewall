@@ -11,9 +11,7 @@ pub fn composite(
     let weighted_tfidf = tfidf_score * 0.7;
     let weighted_entropy = entropy_score * 0.5;
 
-    let final_score = weighted_heuristic
-        .max(weighted_tfidf)
-        .max(weighted_entropy);
+    let final_score = weighted_heuristic.max(weighted_tfidf).max(weighted_entropy);
 
     // If multiple signals agree, boost confidence
     let agreement_count = [

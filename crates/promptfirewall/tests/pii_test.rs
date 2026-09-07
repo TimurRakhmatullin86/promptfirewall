@@ -1,4 +1,4 @@
-use promptfirewall::{scan, ScanConfig, PiiType, RedactStrategy};
+use promptfirewall::{scan, PiiType, RedactStrategy, ScanConfig};
 
 #[test]
 fn detects_ssn_in_prompt() {
@@ -24,10 +24,7 @@ fn detects_credit_card_luhn_valid() {
 
 #[test]
 fn rejects_credit_card_luhn_invalid() {
-    let result = scan(
-        "Not a card: 1234567890123456",
-        &ScanConfig::pii_only(),
-    );
+    let result = scan("Not a card: 1234567890123456", &ScanConfig::pii_only());
     let cc_findings: Vec<_> = result
         .pii_findings
         .iter()

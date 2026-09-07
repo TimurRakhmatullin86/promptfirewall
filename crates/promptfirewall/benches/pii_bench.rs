@@ -45,5 +45,11 @@ fn bench_pii_no_findings(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_pii_short, bench_pii_medium, bench_pii_large, bench_pii_no_findings);
+criterion_group!(
+    benches,
+    bench_pii_short,
+    bench_pii_medium,
+    bench_pii_large,
+    bench_pii_no_findings
+);
 criterion_main!(benches);

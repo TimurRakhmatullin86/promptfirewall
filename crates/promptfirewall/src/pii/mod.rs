@@ -1,7 +1,7 @@
-mod patterns;
-mod luhn;
 mod checksum;
 mod entities;
+mod luhn;
+mod patterns;
 
 pub use entities::PiiType;
 

@@ -1,6 +1,6 @@
 mod config;
-mod pii;
 mod injection;
+mod pii;
 mod redact;
 mod result;
 
@@ -26,7 +26,11 @@ pub fn scan(text: &str, config: &ScanConfig) -> ScanResult {
     };
 
     let redacted_text = if config.redact && !pii_findings.is_empty() {
-        Some(redact::redact_text(text, &pii_findings, &config.redact_with))
+        Some(redact::redact_text(
+            text,
+            &pii_findings,
+            &config.redact_with,
+        ))
     } else {
         None
     };

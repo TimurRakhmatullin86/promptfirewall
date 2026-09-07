@@ -6,8 +6,7 @@ use super::luhn;
 use crate::pii::PiiType;
 use crate::result::PiiFinding;
 
-static SSN_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\b(\d{3})-(\d{2})-(\d{4})\b").unwrap());
+static SSN_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\b(\d{3})-(\d{2})-(\d{4})\b").unwrap());
 
 static CC_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"\b(\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{3,4})\b").unwrap());
@@ -25,8 +24,7 @@ static PHONE_RE: Lazy<Regex> = Lazy::new(|| {
 static IP_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"\b(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\b").unwrap());
 
-static AWS_KEY_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\b(AKIA[0-9A-Z]{16})\b").unwrap());
+static AWS_KEY_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\b(AKIA[0-9A-Z]{16})\b").unwrap());
 
 static API_KEY_RE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"\b(sk-[a-zA-Z0-9]{20,}|pk_live_[a-zA-Z0-9]{20,}|rk_live_[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|glpat-[a-zA-Z0-9\-]{20,}|xox[baprs]-[a-zA-Z0-9\-]{10,})\b").unwrap()
@@ -108,9 +106,7 @@ pub fn detect_ip_address(text: &str) -> Vec<PiiFinding> {
         .captures_iter(text)
         .filter_map(|cap| {
             let m = cap.get(0)?;
-            let valid = (1..=4).all(|i| {
-                cap[i].parse::<u16>().is_ok_and(|v| v <= 255)
-            });
+            let valid = (1..=4).all(|i| cap[i].parse::<u16>().is_ok_and(|v| v <= 255));
             if !valid {
                 return None;
             }

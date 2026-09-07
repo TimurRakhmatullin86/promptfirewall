@@ -1,7 +1,7 @@
-mod heuristic;
-mod tfidf;
 mod entropy;
+mod heuristic;
 mod score;
+mod tfidf;
 
 pub fn scan_injection(text: &str, threshold: f32) -> (f32, Vec<String>) {
     let (heuristic_score, heuristic_labels) = heuristic::detect(text);

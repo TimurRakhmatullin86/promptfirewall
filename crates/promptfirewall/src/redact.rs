@@ -1,11 +1,7 @@
 use crate::config::RedactStrategy;
 use crate::result::PiiFinding;
 
-pub fn redact_text(
-    text: &str,
-    findings: &[PiiFinding],
-    strategy: &RedactStrategy,
-) -> String {
+pub fn redact_text(text: &str, findings: &[PiiFinding], strategy: &RedactStrategy) -> String {
     if findings.is_empty() {
         return text.to_string();
     }

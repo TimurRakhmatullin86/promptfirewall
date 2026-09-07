@@ -66,7 +66,11 @@ fn benign_coding_question_is_safe() {
         "Can you help me write a Python function that sorts a list of dictionaries by a specific key?",
         &ScanConfig::injection_only(),
     );
-    assert!(result.is_safe, "coding question should be safe, score: {}", result.injection_score);
+    assert!(
+        result.is_safe,
+        "coding question should be safe, score: {}",
+        result.injection_score
+    );
 }
 
 #[test]
@@ -86,7 +90,11 @@ fn benign_technical_discussion_safe() {
          The previous version had performance issues that we need to address.",
         &ScanConfig::injection_only(),
     );
-    assert!(result.is_safe, "technical text should be safe, score: {}", result.injection_score);
+    assert!(
+        result.is_safe,
+        "technical text should be safe, score: {}",
+        result.injection_score
+    );
 }
 
 #[test]
