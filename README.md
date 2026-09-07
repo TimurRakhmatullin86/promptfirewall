@@ -5,7 +5,7 @@
 Sub-millisecond latency. Zero network calls. Zero GPU. Zero dependencies beyond Rust stdlib.
 
 [![Crates.io](https://img.shields.io/crates/v/promptfirewall.svg)](https://crates.io/crates/promptfirewall)
-[![PyPI](https://img.shields.io/pypi/v/promptfirewall.svg)](https://pypi.org/project/promptfirewall/)
+[![PyPI](https://img.shields.io/pypi/v/promptfirewall-rs.svg)](https://pypi.org/project/promptfirewall-rs/)
 [![npm](https://img.shields.io/npm/v/promptfirewall.svg)](https://www.npmjs.com/package/promptfirewall)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![CI](https://github.com/TimurRakhmatullin86/promptfirewall/actions/workflows/ci.yml/badge.svg)](https://github.com/TimurRakhmatullin86/promptfirewall/actions)
@@ -51,7 +51,7 @@ assert_eq!(result.redacted_text.unwrap(), "SSN: [SSN]");
 ### Python
 
 ```bash
-pip install promptfirewall
+pip install promptfirewall-rs
 ```
 
 ```python
@@ -224,7 +224,7 @@ let config = ScanConfig {
 cargo add promptfirewall
 
 # Python
-pip install promptfirewall
+pip install promptfirewall-rs
 
 # Node.js
 npm install promptfirewall

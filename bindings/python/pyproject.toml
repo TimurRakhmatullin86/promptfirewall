@@ -3,7 +3,7 @@ requires = ["maturin>=1.5,<2"]
 build-backend = "maturin"
 
 [project]
-name = "promptfirewall"
+name = "promptfirewall-rs"
 version = "0.1.0"
 description = "PII detection + prompt injection firewall. Sub-millisecond, zero network, zero GPU."
 readme = "../../README.md"

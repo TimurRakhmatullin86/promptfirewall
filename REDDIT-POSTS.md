@@ -66,7 +66,7 @@ Built a Python package that detects PII and prompt injection in LLM inputs. It's
 
 **Install:**
 ```bash
-pip install promptfirewall
+pip install promptfirewall-rs
 ```
 
 **Usage:**

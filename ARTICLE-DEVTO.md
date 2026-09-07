@@ -90,7 +90,7 @@ Default threshold: 0.7. Tunable per use case.
 ### Python
 
 ```bash
-pip install promptfirewall
+pip install promptfirewall-rs
 ```
 
 ```python
@@ -178,7 +178,7 @@ assert_eq!(result.redacted_text.unwrap(), "SSN: [SSN]");
 ## Try it
 
 ```bash
-pip install promptfirewall
+pip install promptfirewall-rs
 # or
 npm install promptfirewall
 # or
