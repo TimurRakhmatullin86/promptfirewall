@@ -1,4 +1,4 @@
-use promptfirewall::{scan, ScanConfig};
+use promptfirewall::{ScanConfig, scan};
 
 #[test]
 fn detects_ignore_previous_instructions() {

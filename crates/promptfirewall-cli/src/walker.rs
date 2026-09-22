@@ -37,9 +37,37 @@ impl FileResult {
 }
 
 const DEFAULT_EXTENSIONS: &[&str] = &[
-    "py", "ts", "tsx", "js", "jsx", "yaml", "yml", "json", "toml", "env", "cfg", "ini", "conf",
-    "txt", "md", "rst", "go", "rs", "java", "kt", "rb", "php", "sh", "bash", "zsh", "sql",
-    "graphql", "proto", "tf", "hcl", "dockerfile",
+    "py",
+    "ts",
+    "tsx",
+    "js",
+    "jsx",
+    "yaml",
+    "yml",
+    "json",
+    "toml",
+    "env",
+    "cfg",
+    "ini",
+    "conf",
+    "txt",
+    "md",
+    "rst",
+    "go",
+    "rs",
+    "java",
+    "kt",
+    "rb",
+    "php",
+    "sh",
+    "bash",
+    "zsh",
+    "sql",
+    "graphql",
+    "proto",
+    "tf",
+    "hcl",
+    "dockerfile",
 ];
 
 pub fn walk_and_scan(walker_config: &WalkerConfig, scan_config: &ScanConfig) -> Vec<FileResult> {
@@ -83,10 +111,7 @@ fn should_include(path: &Path, config: &WalkerConfig) -> bool {
         .unwrap_or("")
         .to_lowercase();
 
-    let name = path
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("");
+    let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
     // Check exclude patterns first
     if let Some(excludes) = &config.exclude {

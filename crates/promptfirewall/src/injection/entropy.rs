@@ -20,11 +20,7 @@ fn shannon_entropy(data: &str) -> f64 {
     freq.values()
         .map(|&count| {
             let p = count as f64 / total_f;
-            if p > 0.0 {
-                -p * p.log2()
-            } else {
-                0.0
-            }
+            if p > 0.0 { -p * p.log2() } else { 0.0 }
         })
         .sum()
 }
@@ -102,8 +98,7 @@ mod tests {
 
     #[test]
     fn normal_english_low_entropy() {
-        let text =
-            "Hello, I would like to discuss the project timeline and budget for next quarter. \
+        let text = "Hello, I would like to discuss the project timeline and budget for next quarter. \
                     We need to finalize the requirements document before the meeting on Monday.";
         let score = analyze(text);
         assert!(
