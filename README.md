@@ -123,6 +123,45 @@ app.use(guard({
 }));
 ```
 
+### CLI
+
+```bash
+cargo install promptfirewall-cli
+```
+
+```bash
+# Scan current directory
+promptfirewall .
+
+# Scan specific file types
+promptfirewall src/ --include "*.py,*.ts,*.yaml"
+
+# JSON output
+promptfirewall . --format json
+
+# SARIF output (for GitHub Code Scanning)
+promptfirewall . --format sarif --sarif-file results.sarif
+
+# PII only, no injection detection
+promptfirewall . --no-injection
+
+# Fail CI if findings detected
+promptfirewall . --fail-on-findings
+```
+
+### GitHub Action
+
+```yaml
+- uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+  with:
+    scan-paths: 'src/ prompts/'
+    include: '*.py,*.ts,*.yaml'
+    fail-on-findings: 'true'
+    sarif-upload: 'true'
+```
+
+Findings appear as inline annotations in your PR via GitHub Code Scanning (SARIF).
+
 ## What It Detects
 
 ### PII (regex + checksum validation, zero false positives on structured data)
@@ -220,14 +259,33 @@ let config = ScanConfig {
 ## Installation
 
 ```bash
-# Rust
+# Rust library
 cargo add promptfirewall
+
+# CLI scanner
+cargo install promptfirewall-cli
 
 # Python
 pip install promptfirewall-rs
 
 # Node.js
 npm install promptfirewall-rs
+```
+
+### GitHub Action
+
+```yaml
+# .github/workflows/security.yml
+name: Prompt Security Scan
+on: [push, pull_request]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+        with:
+          fail-on-findings: 'true'
 ```
 
 ## License

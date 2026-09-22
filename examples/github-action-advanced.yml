@@ -1,0 +1,34 @@
+# Advanced: scan only prompt-related files, custom threshold
+name: Prompt Security Scan
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'prompts/**'
+      - '*.yaml'
+      - '*.yml'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for PII and prompt injection
+        id: scan
+        uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+        with:
+          scan-paths: 'src/ prompts/ configs/'
+          include: '*.py,*.ts,*.yaml,*.yml,*.json'
+          exclude: '*.test.py,*.spec.ts'
+          injection-threshold: '0.8'
+          fail-on-findings: 'true'
+          sarif-upload: 'true'
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "Findings: ${{ steps.scan.outputs.findings-count }}"
+          echo "Safe: ${{ steps.scan.outputs.is-safe }}"

@@ -1,0 +1,20 @@
+[package]
+name = "promptfirewall-cli"
+description = "CLI scanner for PII and prompt injection in source files. Powers the promptfirewall GitHub Action."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "promptfirewall"
+path = "src/main.rs"
+
+[dependencies]
+promptfirewall = { path = "../promptfirewall" }
+clap = { version = "4", features = ["derive"] }
+glob = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ignore = "0.4"
