@@ -1,0 +1,130 @@
+name: 'Promptfirewall Security Scan'
+description: 'Scan source files for PII leaks and prompt injection patterns. Offline, zero-network, < 2ms per file.'
+author: 'Timur Rakhmatullin'
+
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  scan-paths:
+    description: 'Paths to scan (space-separated)'
+    required: false
+    default: '.'
+  include:
+    description: 'File patterns to include (comma-separated, e.g. "*.py,*.ts,*.yaml")'
+    required: false
+    default: ''
+  exclude:
+    description: 'File patterns to exclude (comma-separated)'
+    required: false
+    default: ''
+  detect-pii:
+    description: 'Enable PII detection'
+    required: false
+    default: 'true'
+  detect-injection:
+    description: 'Enable prompt injection detection'
+    required: false
+    default: 'true'
+  injection-threshold:
+    description: 'Injection score threshold (0.0-1.0)'
+    required: false
+    default: '0.7'
+  fail-on-findings:
+    description: 'Fail the step if findings are detected'
+    required: false
+    default: 'true'
+  sarif-upload:
+    description: 'Upload SARIF results to GitHub Code Scanning'
+    required: false
+    default: 'true'
+
+outputs:
+  findings-count:
+    description: 'Total number of findings'
+    value: ${{ steps.scan.outputs.findings-count }}
+  is-safe:
+    description: 'Whether the scan passed (true/false)'
+    value: ${{ steps.scan.outputs.is-safe }}
+  sarif-file:
+    description: 'Path to generated SARIF report'
+    value: ${{ steps.scan.outputs.sarif-file }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Determine platform
+      id: platform
+      shell: bash
+      run: |
+        case "${{ runner.os }}-${{ runner.arch }}" in
+          Linux-X64)   echo "target=x86_64-unknown-linux-musl" >> $GITHUB_OUTPUT ;;
+          Linux-ARM64)  echo "target=aarch64-unknown-linux-musl" >> $GITHUB_OUTPUT ;;
+          macOS-X64)    echo "target=x86_64-apple-darwin" >> $GITHUB_OUTPUT ;;
+          macOS-ARM64)  echo "target=aarch64-apple-darwin" >> $GITHUB_OUTPUT ;;
+          Windows-X64)  echo "target=x86_64-pc-windows-msvc" >> $GITHUB_OUTPUT ;;
+          *) echo "::error::Unsupported platform: ${{ runner.os }}-${{ runner.arch }}"; exit 1 ;;
+        esac
+
+    - name: Download promptfirewall binary
+      shell: bash
+      run: |
+        VERSION="${{ github.action_ref }}"
+        if [ -z "$VERSION" ] || [ "$VERSION" = "main" ]; then
+          VERSION=$(curl -sL https://api.github.com/repos/TimurRakhmatullin86/promptfirewall/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+        fi
+        TARGET="${{ steps.platform.outputs.target }}"
+        URL="https://github.com/TimurRakhmatullin86/promptfirewall/releases/download/${VERSION}/promptfirewall-${TARGET}.tar.gz"
+        echo "Downloading promptfirewall ${VERSION} for ${TARGET}..."
+        curl -sL "$URL" | tar xz -C "${{ runner.temp }}"
+        chmod +x "${{ runner.temp }}/promptfirewall"
+
+    - name: Run scan
+      id: scan
+      shell: bash
+      run: |
+        ARGS="${{ inputs.scan-paths }}"
+        if [ -n "${{ inputs.include }}" ]; then
+          ARGS="$ARGS --include ${{ inputs.include }}"
+        fi
+        if [ -n "${{ inputs.exclude }}" ]; then
+          ARGS="$ARGS --exclude ${{ inputs.exclude }}"
+        fi
+        if [ "${{ inputs.detect-pii }}" = "false" ]; then
+          ARGS="$ARGS --no-pii"
+        fi
+        if [ "${{ inputs.detect-injection }}" = "false" ]; then
+          ARGS="$ARGS --no-injection"
+        fi
+        ARGS="$ARGS --injection-threshold ${{ inputs.injection-threshold }}"
+
+        SARIF_FILE="${{ runner.temp }}/promptfirewall-results.sarif"
+        ARGS="$ARGS --sarif-file $SARIF_FILE"
+
+        set +e
+        "${{ runner.temp }}/promptfirewall" $ARGS --format text --fail-on-findings
+        EXIT_CODE=$?
+        set -e
+
+        echo "sarif-file=$SARIF_FILE" >> $GITHUB_OUTPUT
+
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "findings-count=0" >> $GITHUB_OUTPUT
+          echo "is-safe=true" >> $GITHUB_OUTPUT
+        else
+          FINDINGS=$("${{ runner.temp }}/promptfirewall" $ARGS --format json 2>/dev/null | grep -c '"entity_type"\|"injection_detected": true' || echo "1")
+          echo "findings-count=$FINDINGS" >> $GITHUB_OUTPUT
+          echo "is-safe=false" >> $GITHUB_OUTPUT
+        fi
+
+        if [ "${{ inputs.fail-on-findings }}" = "true" ] && [ $EXIT_CODE -ne 0 ]; then
+          exit 1
+        fi
+
+    - name: Upload SARIF to GitHub Code Scanning
+      if: inputs.sarif-upload == 'true' && always()
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif-file }}
+      continue-on-error: true

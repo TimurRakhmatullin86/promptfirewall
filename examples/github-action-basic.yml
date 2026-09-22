@@ -1,0 +1,15 @@
+# Basic usage: scan your entire repo on every PR
+name: Prompt Security Scan
+on: [push, pull_request]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write  # Required for SARIF upload
+    steps:
+      - uses: actions/checkout@v4
+      - uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+        with:
+          fail-on-findings: 'true'
+          sarif-upload: 'true'
