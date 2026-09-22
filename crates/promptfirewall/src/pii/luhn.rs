@@ -16,11 +16,7 @@ pub fn validate(number: &str) -> bool {
         .map(|(i, &d)| {
             if !i.is_multiple_of(2) {
                 let doubled = d * 2;
-                if doubled > 9 {
-                    doubled - 9
-                } else {
-                    doubled
-                }
+                if doubled > 9 { doubled - 9 } else { doubled }
             } else {
                 d
             }

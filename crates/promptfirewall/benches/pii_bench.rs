@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use promptfirewall::{scan, ScanConfig};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use promptfirewall::{ScanConfig, scan};
 
 fn bench_pii_short(c: &mut Criterion) {
     let text = "My SSN is 123-45-6789 and my card is 4111111111111111";

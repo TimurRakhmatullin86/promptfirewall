@@ -1,4 +1,4 @@
-use promptfirewall::{scan, PiiType, RedactStrategy, ScanConfig};
+use promptfirewall::{PiiType, RedactStrategy, ScanConfig, scan};
 
 #[test]
 fn detects_ssn_in_prompt() {

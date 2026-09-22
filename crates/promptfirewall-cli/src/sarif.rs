@@ -1,5 +1,5 @@
 use crate::walker::{FileResult, LocatedPiiFinding};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 pub fn to_sarif(results: &[FileResult]) -> String {
     let sarif = json!({
