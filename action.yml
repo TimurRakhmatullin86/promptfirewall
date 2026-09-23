@@ -75,10 +75,17 @@ runs:
           VERSION=$(curl -sL https://api.github.com/repos/TimurRakhmatullin86/promptfirewall/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
         fi
         TARGET="${{ steps.platform.outputs.target }}"
-        URL="https://github.com/TimurRakhmatullin86/promptfirewall/releases/download/${VERSION}/promptfirewall-${TARGET}.tar.gz"
-        echo "Downloading promptfirewall ${VERSION} for ${TARGET}..."
-        curl -sL "$URL" | tar xz -C "${{ runner.temp }}"
-        chmod +x "${{ runner.temp }}/promptfirewall"
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          URL="https://github.com/TimurRakhmatullin86/promptfirewall/releases/download/${VERSION}/promptfirewall-${TARGET}.zip"
+          echo "Downloading promptfirewall ${VERSION} for ${TARGET}..."
+          curl -sL "$URL" -o "${{ runner.temp }}/promptfirewall.zip"
+          unzip -q "${{ runner.temp }}/promptfirewall.zip" -d "${{ runner.temp }}"
+        else
+          URL="https://github.com/TimurRakhmatullin86/promptfirewall/releases/download/${VERSION}/promptfirewall-${TARGET}.tar.gz"
+          echo "Downloading promptfirewall ${VERSION} for ${TARGET}..."
+          curl -sL "$URL" | tar xz -C "${{ runner.temp }}"
+          chmod +x "${{ runner.temp }}/promptfirewall"
+        fi
 
     - name: Run scan
       id: scan
