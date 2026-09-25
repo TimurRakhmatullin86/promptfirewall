@@ -52,10 +52,7 @@ fn grade_boundary_a_at_90() {
 
 #[test]
 fn grade_boundary_b_at_89() {
-    let result = scan(
-        "My email is user@test.com",
-        &ScanConfig::pii_only(),
-    );
+    let result = scan("My email is user@test.com", &ScanConfig::pii_only());
     let score = compute_safety_score(&result);
     assert_eq!(score.score, 85);
     assert_eq!(score.grade, 'B');
@@ -69,7 +66,11 @@ fn high_injection_deducts_30() {
     );
     let score = compute_safety_score(&result);
     assert!(score.score <= 70);
-    let injection_detail = score.details.iter().find(|d| d.reason.contains("Injection")).unwrap();
+    let injection_detail = score
+        .details
+        .iter()
+        .find(|d| d.reason.contains("Injection"))
+        .unwrap();
     assert_eq!(injection_detail.points, -30);
 }
 

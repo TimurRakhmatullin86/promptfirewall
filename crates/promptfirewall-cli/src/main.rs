@@ -162,10 +162,7 @@ fn print_text(results: &[walker::FileResult], total: usize, score: &SafetyScore)
     let files_scanned = results.len();
     let files_with_findings = results.iter().filter(|r| r.has_findings()).count();
 
-    println!(
-        "Grade: {} (Score: {}/100)",
-        score.grade, score.score,
-    );
+    println!("Grade: {} (Score: {}/100)", score.grade, score.score,);
     for detail in &score.details {
         println!("  {}: {}", detail.points, detail.reason);
     }
@@ -219,7 +216,10 @@ fn print_badge_json(score: &SafetyScore) {
         "message": format!("{} ({}/100)", score.grade, score.score),
         "color": score.badge_color(),
     });
-    println!("{}", serde_json::to_string_pretty(&badge).unwrap_or_default());
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&badge).unwrap_or_default()
+    );
 }
 
 fn truncate(s: &str, max: usize) -> String {
