@@ -2,6 +2,7 @@ mod sarif;
 mod walker;
 
 use clap::Parser;
+use promptfirewall::{SafetyScore, compute_safety_score};
 use std::process;
 
 #[derive(Parser)]
@@ -43,6 +44,10 @@ struct Cli {
     #[arg(long)]
     sarif_file: Option<String>,
 
+    /// Output shields.io endpoint badge JSON
+    #[arg(long)]
+    badge_json: bool,
+
     /// Fail with exit code 1 if any findings
     #[arg(long)]
     fail_on_findings: bool,
@@ -74,15 +79,21 @@ fn main() {
 
     let file_results = walker::walk_and_scan(&walker_config, &config);
 
+    let aggregate_score = compute_aggregate_score(&file_results);
+
     let total_findings: usize = file_results
         .iter()
         .map(|r| r.pii_count + if r.injection_detected { 1 } else { 0 })
         .sum();
 
-    match cli.format {
-        OutputFormat::Text => print_text(&file_results, total_findings),
-        OutputFormat::Json => print_json(&file_results),
-        OutputFormat::Sarif => print_sarif(&file_results),
+    if cli.badge_json {
+        print_badge_json(&aggregate_score);
+    } else {
+        match cli.format {
+            OutputFormat::Text => print_text(&file_results, total_findings, &aggregate_score),
+            OutputFormat::Json => print_json(&file_results),
+            OutputFormat::Sarif => print_sarif(&file_results),
+        }
     }
 
     if let Some(path) = &cli.sarif_file {
@@ -99,9 +110,66 @@ fn main() {
     }
 }
 
-fn print_text(results: &[walker::FileResult], total: usize) {
+fn compute_aggregate_score(results: &[walker::FileResult]) -> SafetyScore {
+    if results.is_empty() {
+        return compute_safety_score(&promptfirewall::ScanResult {
+            is_safe: true,
+            pii_findings: Vec::new(),
+            injection_score: 0.0,
+            injection_labels: Vec::new(),
+            redacted_text: None,
+            latency_us: 0,
+        });
+    }
+
+    let mut all_pii = Vec::new();
+    let mut max_injection_score: f32 = 0.0;
+    let mut all_injection_labels = Vec::new();
+
+    for result in results {
+        for pii in &result.pii_findings {
+            all_pii.push(promptfirewall::PiiFinding {
+                entity_type: pii.entity_type,
+                start: 0,
+                end: 0,
+                text: pii.text.clone(),
+                confidence: pii.confidence,
+            });
+        }
+        if result.injection_score > max_injection_score {
+            max_injection_score = result.injection_score;
+        }
+        for label in &result.injection_labels {
+            if !all_injection_labels.contains(label) {
+                all_injection_labels.push(label.clone());
+            }
+        }
+    }
+
+    let merged = promptfirewall::ScanResult {
+        is_safe: all_pii.is_empty() && max_injection_score < 0.7,
+        pii_findings: all_pii,
+        injection_score: max_injection_score,
+        injection_labels: all_injection_labels,
+        redacted_text: None,
+        latency_us: 0,
+    };
+
+    compute_safety_score(&merged)
+}
+
+fn print_text(results: &[walker::FileResult], total: usize, score: &SafetyScore) {
     let files_scanned = results.len();
     let files_with_findings = results.iter().filter(|r| r.has_findings()).count();
+
+    println!(
+        "Grade: {} (Score: {}/100)",
+        score.grade, score.score,
+    );
+    for detail in &score.details {
+        println!("  {}: {}", detail.points, detail.reason);
+    }
+    println!();
 
     for result in results {
         if !result.has_findings() {
@@ -142,6 +210,16 @@ fn print_json(results: &[walker::FileResult]) {
 
 fn print_sarif(results: &[walker::FileResult]) {
     println!("{}", sarif::to_sarif(results));
+}
+
+fn print_badge_json(score: &SafetyScore) {
+    let badge = serde_json::json!({
+        "schemaVersion": 1,
+        "label": "AI Safety",
+        "message": format!("{} ({}/100)", score.grade, score.score),
+        "color": score.badge_color(),
+    });
+    println!("{}", serde_json::to_string_pretty(&badge).unwrap_or_default());
 }
 
 fn truncate(s: &str, max: usize) -> String {

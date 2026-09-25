@@ -11,7 +11,7 @@ Last month I published [promptfirewall](https://github.com/TimurRakhmatullin86/p
 Now you can. One YAML line:
 
 ```yaml
-- uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+- uses: TimurRakhmatullin86/promptfirewall@v1
 ```
 
 ## What it catches
@@ -51,7 +51,7 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v4
-      - uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+      - uses: TimurRakhmatullin86/promptfirewall@v1
 ```
 
 That's it. It respects `.gitignore`, scans common text extensions (py, ts, js, yaml, json, go, rs, java, etc.), and fails the check if anything is found.
@@ -59,17 +59,19 @@ That's it. It respects `.gitignore`, scans common text extensions (py, ts, js, y
 ### Advanced (tune for your project)
 
 ```yaml
-- uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+- uses: TimurRakhmatullin86/promptfirewall@v1
   with:
     scan-paths: 'src/ prompts/ config/'
     include: '*.py,*.ts,*.yaml'
     exclude: '*.test.py,fixtures/*'
-    detect-pii: true
-    detect-injection: true
-    injection-threshold: '0.8'
-    fail-on-findings: true
+    threshold: 70
+    post-comment: true
     sarif-upload: true
 ```
+
+### PR Comments
+
+Set `post-comment: true` and the action posts a comment on each PR with the safety score, grade, and detailed findings. It updates the same comment on subsequent pushes instead of creating duplicates.
 
 ### Inputs
 
@@ -80,17 +82,26 @@ That's it. It respects `.gitignore`, scans common text extensions (py, ts, js, y
 | `exclude` | none | Glob patterns to exclude |
 | `detect-pii` | `true` | Enable PII scanning |
 | `detect-injection` | `true` | Enable injection detection |
-| `injection-threshold` | `0.7` | Score threshold (0.0–1.0) |
+| `injection-threshold` | `0.7` | Score threshold (0.0-1.0) |
 | `fail-on-findings` | `true` | Fail the step on findings |
+| `threshold` | `0` | Minimum AI Safety Score (0-100); fails if below |
+| `post-comment` | `false` | Post results as PR comment |
+| `badge-json` | `false` | Output shields.io badge JSON |
 | `sarif-upload` | `true` | Upload to Code Scanning |
 
 ### Outputs
 
+| Output | Description |
+|---|---|
+| `score` | AI Safety Score (0-100) |
+| `grade` | Grade (A-F) |
+| `findings-count` | Total number of findings |
+| `is-safe` | Whether the scan passed (true/false) |
+
 ```yaml
-- uses: TimurRakhmatullin86/promptfirewall@v0.1.0
+- uses: TimurRakhmatullin86/promptfirewall@v1
   id: scan
-- run: echo "Found ${{ steps.scan.outputs.findings-count }} issues"
-  if: steps.scan.outputs.is-safe == 'false'
+- run: echo "Grade ${{ steps.scan.outputs.grade }} — Score ${{ steps.scan.outputs.score }}/100"
 ```
 
 ## Performance
@@ -130,7 +141,6 @@ We run promptfirewall on its own repo. The CI workflow includes a self-scan step
 
 - Custom regex rules via config file
 - `.promptfirewallignore` for inline suppression
-- GitHub Marketplace listing
 - Pre-commit hook integration
 
 If you're building anything with LLMs, add the scan to your pipeline. It takes 30 seconds to set up and catches things code review misses.
