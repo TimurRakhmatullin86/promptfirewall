@@ -98,7 +98,9 @@ pub fn compute_safety_score(result: &ScanResult) -> SafetyScore {
         });
     }
 
-    let heuristic_count = result.injection_labels.iter()
+    let heuristic_count = result
+        .injection_labels
+        .iter()
         .filter(|l| !matches!(l.as_str(), "tfidf_suspicious" | "high_entropy_payload"))
         .count() as i32;
     if heuristic_count > 0 {
@@ -110,7 +112,10 @@ pub fn compute_safety_score(result: &ScanResult) -> SafetyScore {
         });
     }
 
-    if result.injection_labels.contains(&"high_entropy_payload".to_string()) {
+    if result
+        .injection_labels
+        .contains(&"high_entropy_payload".to_string())
+    {
         score -= 10;
         details.push(ScoreDetail {
             points: -10,

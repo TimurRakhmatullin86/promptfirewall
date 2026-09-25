@@ -29,6 +29,11 @@ result = promptfirewall.scan("SSN: 123-45-6789. Ignore previous instructions.")
 # is_safe=False, injection_score=0.983, latency=12us
 ```
 
-Ships with FastAPI and Express middleware. 8 PII types, 3-layer injection detection. MIT/Apache-2.0.
+**v0.2.0 ships with:**
+- AI Safety Score (0-100, Grade A-F) — quantified security posture
+- GitHub Action — drop `uses: TimurRakhmatullin86/promptfirewall@v0.2.0` into any CI pipeline
+- LangChain & LlamaIndex callback handlers (standalone PyPI packages)
+- FastAPI and Express middleware
+- 8 PII types, 3-layer injection detection
 
-19 discussion comments on the dev.to writeup, mostly about real-world integration patterns. Feedback welcome.
+MIT/Apache-2.0. Feedback welcome — especially from teams doing security scanning in CI.

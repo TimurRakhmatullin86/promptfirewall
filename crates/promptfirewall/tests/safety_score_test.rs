@@ -30,7 +30,11 @@ fn multiple_pii_capped_at_45() {
         &ScanConfig::pii_only(),
     );
     let score = compute_safety_score(&result);
-    let pii_detail = score.details.iter().find(|d| d.reason.contains("PII")).unwrap();
+    let pii_detail = score
+        .details
+        .iter()
+        .find(|d| d.reason.contains("PII"))
+        .unwrap();
     assert_eq!(pii_detail.points, -45);
     assert_eq!(score.score, 55);
 }
