@@ -6,7 +6,7 @@ mod result;
 
 pub use config::{RedactStrategy, ScanConfig};
 pub use pii::PiiType;
-pub use result::{PiiFinding, ScanResult};
+pub use result::{PiiFinding, SafetyScore, ScanResult, ScoreDetail, compute_safety_score};
 
 use std::time::Instant;
 

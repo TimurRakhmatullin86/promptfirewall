@@ -1,14 +1,199 @@
 # promptfirewall
 
+[![Crates.io](https://img.shields.io/crates/v/promptfirewall)](https://crates.io/crates/promptfirewall)
+[![PyPI](https://img.shields.io/pypi/v/promptfirewall-rs)](https://pypi.org/project/promptfirewall-rs/)
+[![npm](https://img.shields.io/npm/v/promptfirewall-rs)](https://www.npmjs.com/package/promptfirewall-rs)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue)](LICENSE)
+[![CI](https://github.com/TimurRakhmatullin86/promptfirewall/actions/workflows/ci.yml/badge.svg)](https://github.com/TimurRakhmatullin86/promptfirewall/actions)
+
 **PII detection + prompt injection firewall for LLM applications.**
 
 Sub-millisecond latency. Zero network calls. Zero GPU. Zero dependencies beyond Rust stdlib.
 
-[![Crates.io](https://img.shields.io/crates/v/promptfirewall.svg)](https://crates.io/crates/promptfirewall)
-[![PyPI](https://img.shields.io/pypi/v/promptfirewall-rs.svg)](https://pypi.org/project/promptfirewall-rs/)
-[![npm](https://img.shields.io/npm/v/promptfirewall-rs.svg)](https://www.npmjs.com/package/promptfirewall-rs)
-[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
-[![CI](https://github.com/TimurRakhmatullin86/promptfirewall/actions/workflows/ci.yml/badge.svg)](https://github.com/TimurRakhmatullin86/promptfirewall/actions)
+---
+
+## Highlights
+
+- **AI Safety Score** -- 0-100 score with A-F grading for every scan
+- **Shields.io badge** -- display your project's safety grade in your README
+- **GitHub Action** -- block unsafe prompts in CI/CD with one line
+- **LangChain / LlamaIndex / Vercel AI SDK** -- drop-in integrations
+- **12 us full scan** -- 15,000x faster than Presidio, 25,000x faster than LLM Guard
+- **PII + injection** -- the only local package that does both in <1ms
+
+---
+
+## AI Safety Score
+
+Every scan produces a safety score (0-100) and letter grade (A-F). Use it to quantify how safe a prompt or codebase is before it reaches an LLM.
+
+### Score Breakdown
+
+| Grade | Score Range | Meaning |
+|-------|------------|---------|
+| **A** | 90-100 | Excellent -- no or negligible findings |
+| **B** | 80-89 | Good -- minor PII detected |
+| **C** | 70-79 | Fair -- multiple PII types or mild injection signals |
+| **D** | 60-69 | Poor -- injection patterns detected |
+| **F** | 0-59 | Critical -- active injection + PII exposure |
+
+### Deductions
+
+| Finding | Points Deducted |
+|---------|----------------|
+| Each PII finding | -15 (capped at -45) |
+| Injection score > 0.7 | -30 |
+| Injection score 0.4-0.7 | -15 |
+| Each heuristic match | -5 (capped at -20) |
+| Entropy anomaly | -10 |
+
+### CLI Usage
+
+```bash
+# Scan a directory — safety score is shown automatically
+promptfirewall src/
+# Output:
+# Grade: A (Score: 97/100)
+#   -3: PII detected (Email)
+# ...
+
+# shields.io badge JSON
+promptfirewall src/ --badge-json
+# {"schemaVersion":1,"label":"AI Safety","message":"A (97/100)","color":"brightgreen"}
+```
+
+### Badge JSON Output
+
+```bash
+promptfirewall src/ --badge-json > safety-badge.json
+```
+
+Output:
+```json
+{
+  "schemaVersion": 1,
+  "label": "AI Safety",
+  "message": "A (100/100)",
+  "color": "brightgreen"
+}
+```
+
+### Programmatic Usage
+
+```rust
+use promptfirewall::{scan, compute_safety_score, ScanConfig};
+
+let result = scan("My SSN is 123-45-6789", &ScanConfig::default());
+let score = compute_safety_score(&result);
+
+println!("Grade: {} ({}/100)", score.grade, score.score);
+for detail in &score.details {
+    println!("  {}: {}", detail.points, detail.reason);
+}
+// Grade: B (85/100)
+//   -15: PII detected (SSN)
+```
+
+```python
+import promptfirewall
+
+result = promptfirewall.scan("My SSN is 123-45-6789")
+score = promptfirewall.safety_score(result)
+print(f"{score.grade} ({score.score}/100)")  # B (85/100)
+```
+
+---
+
+## Add a Badge to Your README
+
+Display your project's AI Safety Score as a shields.io badge:
+
+**Step 1.** Generate the badge JSON:
+```bash
+promptfirewall src/ --badge-json > safety-badge.json
+```
+
+**Step 2.** Host `safety-badge.json` at a public URL (GitHub Pages, raw gist, etc.).
+
+**Step 3.** Add the badge to your README:
+```markdown
+[![AI Safety Score](https://img.shields.io/endpoint?url=YOUR_ENDPOINT_URL&style=for-the-badge)](https://github.com/TimurRakhmatullin86/promptfirewall)
+```
+
+Result (example):
+
+[![AI Safety Score](https://img.shields.io/badge/AI%20Safety-A%20(100%2F100)-brightgreen?style=for-the-badge)](https://github.com/TimurRakhmatullin86/promptfirewall)
+
+---
+
+## GitHub Action
+
+Add prompt security scanning to your CI/CD pipeline. One line to get an AI Safety Score on every PR:
+
+```yaml
+- uses: TimurRakhmatullin86/promptfirewall@v1
+  with:
+    threshold: 70
+```
+
+### Full Example
+
+```yaml
+# .github/workflows/security.yml
+name: AI Safety Scan
+on: [pull_request]
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: TimurRakhmatullin86/promptfirewall@v1
+        id: scan
+        with:
+          scan-paths: 'src/ prompts/'
+          include: '*.py,*.ts,*.yaml'
+          threshold: 70
+          post-comment: 'true'
+          sarif-upload: 'true'
+      - run: echo "Score ${{ steps.scan.outputs.score }}, Grade ${{ steps.scan.outputs.grade }}"
+```
+
+### Inputs
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `scan-paths` | `.` | Directories to scan (space-separated) |
+| `include` | all text files | File glob patterns to include (comma-separated) |
+| `exclude` | none | File glob patterns to exclude (comma-separated) |
+| `detect-pii` | `true` | Enable PII detection |
+| `detect-injection` | `true` | Enable prompt injection detection |
+| `injection-threshold` | `0.7` | Injection score threshold (0.0-1.0) |
+| `fail-on-findings` | `true` | Fail the step if any findings detected |
+| `threshold` | `0` | Minimum AI Safety Score (0-100); fails if score is below |
+| `post-comment` | `false` | Post results as a PR comment |
+| `badge-json` | `false` | Output shields.io badge JSON |
+| `sarif-upload` | `true` | Upload SARIF to GitHub Code Scanning |
+
+### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `score` | AI Safety Score (0-100) |
+| `grade` | Grade (A-F) |
+| `findings-count` | Total number of findings |
+| `is-safe` | Whether the scan passed (true/false) |
+| `badge-json` | shields.io endpoint badge JSON |
+| `sarif-file` | Path to generated SARIF report |
+
+Findings appear as inline annotations in your PR via GitHub Code Scanning (SARIF).
+
+---
 
 ## Why
 
@@ -147,20 +332,79 @@ promptfirewall . --no-injection
 
 # Fail CI if findings detected
 promptfirewall . --fail-on-findings
+
+# AI Safety Score
+promptfirewall . --score
+
+# Badge JSON for shields.io
+promptfirewall . --badge-json > safety-badge.json
 ```
 
-### GitHub Action
+---
 
-```yaml
-- uses: TimurRakhmatullin86/promptfirewall@v0.1.0
-  with:
-    scan-paths: 'src/ prompts/'
-    include: '*.py,*.ts,*.yaml'
-    fail-on-findings: 'true'
-    sarif-upload: 'true'
+## Integrations
+
+Drop-in support for popular LLM frameworks. See [integrations/README.md](integrations/README.md) for full documentation.
+
+### LangChain
+
+```python
+from promptfirewall.integrations import LangChainFirewall
+chain = LangChainFirewall() | your_llm_chain
+result = chain.invoke({"input": user_prompt})
 ```
 
-Findings appear as inline annotations in your PR via GitHub Code Scanning (SARIF).
+### LlamaIndex
+
+```python
+from promptfirewall.integrations import LlamaIndexFirewall
+query_engine = index.as_query_engine(node_postprocessors=[LlamaIndexFirewall()])
+response = query_engine.query(user_prompt)
+```
+
+### Vercel AI SDK
+
+```typescript
+import { promptFirewall } from 'promptfirewall-rs/vercel';
+const result = await generateText({ model, prompt, middleware: [promptFirewall()] });
+```
+
+---
+
+## Benchmarks vs Alternatives
+
+| Tool | Latency | Type | Language | Status |
+|------|---------|------|----------|--------|
+| **promptfirewall** | **12 us** | Heuristic + TF-IDF | Rust | **Active** |
+| jailguard | 14 ms | ML | Python | Active |
+| LLM Guard | ~300 ms | Python ML | Python | Active |
+| Presidio | ~180 ms | Python NLP | Python | Active |
+| Rebuff | -- | -- | Python | Archived |
+| Lakera | -- | Cloud API | -- | Acquired by Check Point |
+| Promptfoo | -- | -- | TypeScript | Acquired by OpenAI |
+
+> promptfirewall is **1,000x** faster than jailguard, **15,000x** faster than Presidio, and **25,000x** faster than LLM Guard.
+
+### Feature Comparison
+
+| Feature | promptfirewall | Presidio | LLM Guard | Lakera |
+|---------|---------------|----------|-----------|--------|
+| PII Detection | Yes | Yes | Yes | Yes |
+| Injection Detection | Yes | No | Yes | Yes |
+| AI Safety Score | **Yes** | No | No | No |
+| GitHub Action | **Yes** | No | No | No |
+| LangChain Integration | **Yes** | No | No | Partial |
+| LlamaIndex Integration | **Yes** | No | No | No |
+| Latency (measured) | **12 us** | ~200ms | ~300ms | ~100ms+network |
+| Network Required | No | Optional | Optional | **Yes** |
+| GPU Required | No | Optional | Optional | N/A |
+| GDPR On-Prem | Yes | Partial | Yes | No |
+| Dependencies | 2 (regex, serde) | 12+ | 47+ | API |
+| Binary Size | ~2MB | ~850MB | ~1.2GB | N/A |
+| Python Bindings | **Yes** (PyO3) | Native | Native | API |
+| Node.js Bindings | **Yes** (napi-rs) | No | No | API |
+
+---
 
 ## What It Detects
 
@@ -202,21 +446,6 @@ Findings appear as inline annotations in your PR via GitHub Code Scanning (SARIF
 
 Full PII + injection scan on a typical prompt: **~12 microseconds**. That is 15,000x faster than Presidio and 25,000x faster than LLM Guard.
 
-## Comparison
-
-| Feature | promptfirewall | Presidio | LLM Guard | Lakera |
-|---------|---------------|----------|-----------|--------|
-| PII Detection | Yes | Yes | Yes | Yes |
-| Injection Detection | Yes | No | Yes | Yes |
-| Latency (measured) | **12 us** | ~200ms | ~300ms | ~100ms+network |
-| Network Required | No | Optional | Optional | **Yes** |
-| GPU Required | No | Optional | Optional | N/A |
-| GDPR On-Prem | Yes | Partial | Yes | No |
-| Dependencies | 2 (regex, serde) | 12+ | 47+ | API |
-| Binary Size | ~2MB | ~850MB | ~1.2GB | N/A |
-| Python Bindings | **Yes** (PyO3) | Native | Native | API |
-| Node.js Bindings | **Yes** (napi-rs) | No | No | API |
-
 ## Architecture
 
 ```
@@ -239,6 +468,9 @@ User Input
     |
     v
 ScanResult { is_safe, pii_findings, injection_score, redacted_text, latency_us }
+    |
+    v
+[compute_safety_score()]  -->  SafetyScore { score: 0-100, grade: A-F, details }
 ```
 
 ## Configuration
@@ -270,22 +502,6 @@ pip install promptfirewall-rs
 
 # Node.js
 npm install promptfirewall-rs
-```
-
-### GitHub Action
-
-```yaml
-# .github/workflows/security.yml
-name: Prompt Security Scan
-on: [push, pull_request]
-jobs:
-  scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: TimurRakhmatullin86/promptfirewall@v0.1.0
-        with:
-          fail-on-findings: 'true'
 ```
 
 ## License
