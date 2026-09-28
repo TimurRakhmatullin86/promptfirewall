@@ -12,7 +12,7 @@ name = "promptfirewall"
 path = "src/main.rs"
 
 [dependencies]
-promptfirewall = { path = "../promptfirewall" }
+promptfirewall = { version = "0.2.0", path = "../promptfirewall" }
 clap = { version = "4", features = ["derive"] }
 glob = "0.3"
 serde = { version = "1", features = ["derive"] }
